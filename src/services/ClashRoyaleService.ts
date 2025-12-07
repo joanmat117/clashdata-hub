@@ -1,37 +1,63 @@
 import {ClashRoyaleAPI} from '@varandas/clash-royale-api'
+import { AppError, NotFoundError } from '../utils/Errors.js'
 
 export interface ClashRoyaleServiceDependencies {
-  key:string,
   baseUrl:string
 }
 
 export type ClashRoyaleTag = string
 
+const clashRoyaleAPI = new ClashRoyaleAPI(
+  process.env.CRK as string,
+  'https://proxy.royaleapi.dev/v1'
+)
+
 export class ClashRoyaleService {
   
-  private api:ClashRoyaleAPI
-
-  constructor({key,baseUrl}:ClashRoyaleServiceDependencies){
-    this.api = new ClashRoyaleAPI(key,baseUrl)
-  }
-
-  getPlayerData = async (tag:ClashRoyaleTag)=>{
-    try{
-    const data = await this.api.getPlayerByTag(tag)  
-    return data
-    } catch (e){
-      console.log(e)
+  static getCards = async ()=>{
+    try {
+      const data = await clashRoyaleAPI.getCards()
+      return data
+    } catch (e:any) {
+      throw new AppError('Error retrieving the cards')
     }
   }
 
-  getClanData = async (tag:ClashRoyaleTag)=>{
-    const data = await this.api.getClanByTag(tag)
+  static getPlayerData = async (tag:ClashRoyaleTag)=>{
+    try{
+    const data = await clashRoyaleAPI.getPlayerByTag(tag)  
     return data
+    } catch (e:any){
+      if(e.response.data.reason === 'notFound') throw new NotFoundError('Player not found')
+      else {
+        throw new AppError(e.response.statusText || 'Internal error',e.response.status || 500)
+      }
+    }
   }
 
-  getClanWarLog = async (tag:ClashRoyaleTag)=>{
-    const data = await this.api.getClanWarlog(tag)
+  static getClanData = async (tag:ClashRoyaleTag)=>{
+    try {
+    const data = await clashRoyaleAPI.getClanByTag(tag)
     return data
+    } catch (e:any){
+      if(e.response.data.reason === 'notFound') throw new NotFoundError('Clan not found')
+      else {
+        throw new AppError(e.response.statusText || 'Internal error',e.response.status || 500)
+      }
+    }
+  }
+
+  static getClanWarLog = async (tag:ClashRoyaleTag)=>{
+    try {
+    const data = await clashRoyaleAPI.getClanWarlog(tag)
+    return data
+    } catch (e:any){
+      if(e.response.data.reason === 'notFound') throw new NotFoundError('Clan War Log not found')
+      else {
+        throw new AppError(e.response.statusText || 'Internal error',e.response.status || 500)
+      }
+    }
+
   }
 }
 

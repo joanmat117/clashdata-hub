@@ -1,14 +1,11 @@
-import {ClashRoyaleService, ClashRoyaleServiceDependencies} from './../services/ClashRoyaleService.js'
+import { handleError } from '../utils/handleError.js'
+import {ClashRoyaleService} from './../services/ClashRoyaleService.js'
 import { Response,Request } from 'express'
 
 export class PlayerController {
-  private api:ClashRoyaleService
-  
-  constructor(config:ClashRoyaleServiceDependencies){
-    this.api = new ClashRoyaleService(config)
-  }
 
-  getPlayer = async (req:Request,res:Response)=>{
+  static getPlayer = async (req:Request,res:Response)=>{
+    try {
     const tagWithoutHash = req.params.tag
     if(!tagWithoutHash){
       return res.json({
@@ -19,13 +16,13 @@ export class PlayerController {
     }
     const tag = `#${tagWithoutHash}`
 
-    const data = await this.api.getPlayerData(tag)
-    console.log(`Data recuperada de ${tag} :`,data)
+    const data = await ClashRoyaleService.getPlayerData(tag)
     return res.json({
       success:true,
       data:data,
-      message:''
     })
+    } catch (e:any){
+      handleError(res,e)
+    }
   }
-
 }
