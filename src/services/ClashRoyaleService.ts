@@ -57,6 +57,18 @@ export class ClashRoyaleService {
         throw new AppError(e.response.statusText || 'Internal error',e.response.status || 500)
       }
     }
+  }
+
+  static getClanMembers = async (tag:ClashRoyaleTag)=>{
+    try {
+    const data = await clashRoyaleAPI.getClanMembers(tag)
+    return data
+    } catch (e:any){
+      if(e.response.data.reason === 'notFound') throw new NotFoundError('Clan not found')
+      else {
+        throw new AppError(e.response.statusText || 'Internal error',e.response.status || 500)
+      }
+    }
 
   }
 }

@@ -3,8 +3,9 @@ import { PlayerController } from "../controllers/PlayerController.js";
 
 const router:Router = express.Router()
 
-router.get('/:tag',PlayerController.getPlayer)
+router.get('/:tag/:property',PlayerController.getPlayerProperty)
 
+router.get('/:tag',PlayerController.getPlayer)
 
 export {
   router as playerRouter
