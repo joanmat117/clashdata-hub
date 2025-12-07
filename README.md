@@ -1,4 +1,7 @@
 ## 🎯 **OBJETIVO PRINCIPAL**
+
+#ULGY9GUJ0
+
 Crear una API en Node.js/Express que funcione como intermediario entre tu aplicación y la API oficial de Clash Royale. Tu servidor obtendrá datos en tiempo real del juego, los combinará con información almacenada en tu base de datos, y servirá todo a través de una aplicación estructurada con arquitectura MVC.
 
 ## 📁 **ESTRUCTURA DEL PROYECTO**
