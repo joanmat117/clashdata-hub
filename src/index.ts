@@ -1,5 +1,7 @@
 import express, {json} from 'express'
 import { corsMiddleware } from './middlewares/cors.js'
+import dotenv from 'dotenv'
+dotenv.config()
 
 const app = express()
 
