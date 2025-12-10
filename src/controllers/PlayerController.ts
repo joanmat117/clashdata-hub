@@ -48,4 +48,24 @@ export class PlayerController {
       handleError(res,e)
     }
   }
+
+  static getPlayerBattles = async (req:Request,res:Response)=>{
+    try{
+    const {tag:tagWithoutHash} = req.params
+
+    if(!validateTag(tagWithoutHash)) throw new ValidationError('Invalid player tag')
+
+    const tag = `#${tagWithoutHash}`
+    
+    const playerBattles = await ClashRoyaleService.getPlayerBattleLog(tag)
+    
+    return {
+      success:true,
+      data:playerBattles
+    }
+
+    } catch(e:any){
+      handleError(res,e)
+    }
+  }
 }

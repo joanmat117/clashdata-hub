@@ -19,9 +19,9 @@ src/
 ## ⚙️ **TAREAS DE IMPLEMENTACIÓN**
 
 ### **1. CONFIGURACIÓN INICIAL**
-- Inicializa Express e instala: `express`, `cors`, `@varandas/clash-royale-api`, y tu driver SQL
-- Configura el middleware `cors` para desarrollo (permite `http://localhost:3000`)
-- Configura el cliente `ClashRoyaleAPI` en un servicio, usando tu token oficial
+- [x] Inicializa Express e instala: `express`, `cors`, `@varandas/clash-royale-api`, y tu driver SQL
+- [x] Configura el middleware `cors` para desarrollo (permite `http://localhost:3000`)
+- [x] Configura el cliente `ClashRoyaleAPI` en un servicio, usando tu token oficial
 
 ### **2. BASE DE DATOS SQL (CREA ESTAS TABLAS)**
 ```sql
@@ -47,22 +47,22 @@ CREATE TABLE api_cache (
 ```
 
 ### **3. CAPA DE SERVICIO (ClashRoyaleService)**
-- Crea una clase que use el cliente `ClashRoyaleAPI`
-- Implementa métodos como `getPlayerData(tag)`, `getClanData(tag)`, `getClanWarLog(tag)`
+- [x] Crea una clase que use el cliente `ClashRoyaleAPI`
+- [x] Implementa métodos como `getPlayerData(tag)`, `getClanData(tag)`, `getClanWarLog(tag)`
 - **Implementa caché**: Consulta la tabla `api_cache` antes de llamar a la API externa
 
 ### **4. RUTAS Y CONTROLADORES (MVC)**
 **Endpoints principales a construir:**
 
 - `GET /api/jugadores/:tag`
-  - **Controlador**: `PlayerController.getPlayer`
+  - [x] **Controlador**: `PlayerController.getPlayer`
   - **Lógica**: Obtiene datos del servicio, combina con favoritos de tu BD
 
 - `POST /api/favoritos`
   - **Controlador**: `FavoriteController.add`
   - **Lógica**: Valida y almacena player/clan tag en tu BD
 
-- `GET /api/clanes/buscar?nombre=...&minScore=...`
+- [x] `GET /api/clanes/buscar?nombre=...&minScore=...`
   - **Controlador**: `ClanController.search`
   - **Lógica**: Pasa parámetros de query al servicio `getClans(params)`
 
@@ -79,25 +79,18 @@ CREATE TABLE api_cache (
 ## 🔧 **REQUISITOS TÉCNICOS OBLIGATORIOS**
 Tu implementación debe:
 
-1. **Usar el wrapper** `@varandas/clash-royale-api` para todos los datos externos
-2. **Configurar CORS** correctamente para tu frontend
-3. **Seguir arquitectura MVC**: Rutas → Controladores → Servicios → Modelos
+1. [x] **Usar el wrapper** `@varandas/clash-royale-api` para todos los datos externos
+2. [x] **Configurar CORS** correctamente para tu frontend
+3. [x] **Seguir arquitectura MVC**: Rutas → Controladores → Servicios → Modelos
 4. **Interactuar con SQL** usando queries directos o un ORM
 5. **Crear al menos 2 middlewares** personalizados (ej: `validateTag`, `cacheMiddleware`)
 
 ## 🚀 **ENDPOINTS SUGERIDOS PARA IMPLEMENTAR**
-- `GET /api/jugadores/:tag/batallas` - Historial de batallas
-- `GET /api/clanes/:tag/miembros` - Lista de miembros del clan
-- `GET /api/favoritos` - Lista favoritos del usuario actual
+- [x] `GET /api/jugadores/:tag/batallas` - Historial de batallas
+- [x] `GET /api/clanes/:tag/miembros` - Lista de miembros del clan
+- [x] `GET /api/cartas` - Todas las cartas disponibles (con filtros)
 - `DELETE /api/favoritos/:id` - Eliminar favorito
-- `GET /api/cartas` - Todas las cartas disponibles (con filtros)
-
-## 💡 **PASOS PARA COMENZAR**
-1. Crea carpeta del proyecto e inicia `npm`
-2. Instala dependencias: `express`, `cors`, `@varandas/clash-royale-api`, `dotenv`, `express-validator`, y tu cliente SQL
-3. **Obtén tu Token API** en [developer.clashroyale.com](https://developer.clashroyale.com)
-4. Configura tu base de datos SQL y crea las tablas
-5. Comienza construyendo el `ClashRoyaleService` para verificar conexión con la API externa
+- `GET /api/favoritos` - Lista favoritos del usuario actual
 
 ## 📋 **TAREAS ESPECÍFICAS PARA PRACTICAR**
 1. **Completa el modelo** `Favorite` con métodos CRUD

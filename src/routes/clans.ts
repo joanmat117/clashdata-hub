@@ -3,6 +3,8 @@ import { ClansController } from '../controllers/ClansController.js'
 
 const router:Router = express.Router()
 
+router.get('/search',ClansController.getClansBySearch)
+
 router.get('/:tag/wars',ClansController.getClanWarLog)
 
 router.get('/:tag/members',ClansController.getClanMembers)
