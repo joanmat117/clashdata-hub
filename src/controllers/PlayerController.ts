@@ -59,10 +59,10 @@ export class PlayerController {
     
     const playerBattles = await ClashRoyaleService.getPlayerBattleLog(tag)
     
-    return {
+    return res.json({
       success:true,
       data:playerBattles
-    }
+    })
 
     } catch(e:any){
       handleError(res,e)
