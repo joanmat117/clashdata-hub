@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash Data Hub</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <style>
+        :root {
+    --cr-bg: #121418;
+    --cr-card: #1e2129;
+    --cr-accent: #3b82f6;
+    --cr-gold: #fbbf24;
+    --cr-text: #e2e8f0;
+}
+
+body {
+    background-color: var(--cr-bg);
+    color: var(--cr-text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    background-color: var(--cr-card);
+    border: 1px solid #2d323e;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border-color: rgba(108, 117, 125, 0.5);
+}
+
+.form-control {
+    background-color: #161920;
+    border: 1px solid #2d323e;
+    color: white;
+}
+.form-control:focus {
+    background-color: #161920;
+    border-color: var(--cr-accent);
+    color: white;
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+.nav-link {
+    color: #94a3b8;
+    font-weight: 500;
+    cursor: pointer;
+}
+.nav-link.active {
+    color: var(--cr-accent) !important;
+    border-bottom: 2px solid var(--cr-accent);
+}
+
+.btn-primary {
+    background-color: var(--cr-accent);
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.deck-card {
+    position: relative;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    border-radius: 6px;
+    border: 1px solid #444;
+}
+.deck-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.level-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    font-size: 0.7rem;
+    font-weight:800;
+    padding: 2px 4px;
+    border-top-left-radius: 4px;
+}
+
+.battle-item {
+    border-left: 4px solid gray;
+    transition: transform 0.2s;
+}
+.battle-item:hover {
+    transform: translateX(5px);
+}
+.battle-win { border-left-color: #22c55e; }
+.battle-loss { border-left-color: #ef4444; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--cr-bg); }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+/* ===== ESTILOS PARA CARTAS CLASH ROYALE ===== */
+.card .badge { letter-spacing: 0.5px; }
+.rarity-common { background-color: #b0b0b0 !important; color: #000 !important; }
+.rarity-rare { background-color: #4a90e2 !important; }
+.rarity-epic { background-color: #9b59b6 !important; }
+.rarity-legendary { background-color: #f1c40f !important; color: #000 !important; }
+.rarity-champion { background-color: #e74c3c !important; }
+.bg-info.bg-opacity-10 { background-color: rgba(23, 162, 184, 0.1) !important; }    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand bg-dark border-bottom border-secondary sticky-top" style="--bs-bg-opacity: .95;">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 text- fw-bold" href="#">
+                <i class="ri-sword-fill text-danger"></i> ClashData
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" onclick="switchTab('player')" id="nav-player">Jugador</a>
+                <a class="nav-link" onclick="switchTab('clan')" id="nav-clan">Clan</a>
+                <a class="nav-link" onclick="switchTab('cards')" id="nav-cards">Cartas</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Alert Container -->
+    <div class="container mt-3">
+        <div id="alert-box" class="alert alert-danger d-none" role="alert"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+
+        <!-- ======================= PLAYER SECTION ======================= -->
+        <section id="view-player">
+            <!-- Search Bar -->
+            <div class="row justify-content-center mb-5">
+                <div class="col-md-8 col-lg-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary rounded-start-pill text-secondary">#</span>
+                        <input type="text" id="player-tag" class="form-control form-control-lg" placeholder="200GYQCRR0...">
+                        <button class="btn btn-danger rounded-end-pill px-4" onclick="fetchPlayer()">
+                            <i class="ri-search-line fs-3"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="player-loader" class="text-center py-5 d-none">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Cargando datos del rey...</p>
+            </div>
+
+            <!-- Player Content -->
+            <div id="player-content" class="d-none animate-fade">
+                <!-- Header Info -->
+                <div class="card p-4 mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 fw-bold mb-1">
+                                <span id="p-name">Nombre</span>
+                                <span class="badge bg-secondary fs-6 align-middle" id="p-tag">#TAG</span>
+                            </h1>
+                            <p class="text-secondary mb-3"><i class="ri-shield-user-line"></i> <span id="p-clan">Sin Clan</span></p>
+                            
+                            <div class="d-flex gap-4">
+                                <div>
+                                    <small class="text-secondary d-block">Nivel</small>
+                                    <span class="fs-4 fw-bold" id="p-level">14</span>
+                                </div>
+                                
+                                <div>
+                                    <small class="text-secondary d-block">Trofeos</small>
+                                    <span class="fs-4 fw-bold text-warning" id="p-trophies">0</span>
+                                </div>
+                                <div>
+                                    <small class="text-secondary d-block">Récord</small>
+                                    <span class="fs-4 fw-bold" id="p-best">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Current Deck -->
+                    <div class="col-lg-6">
+                        <h4 class="mb-3"><i class="ri-stack-line text-primary"></i> Mazo Actual</h4>
+                        <div class="card p-3">
+                            <div class="row g-2" id="p-deck">
+                                <!-- Cards injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Battle Log -->
+                    <div class="col-lg-6">
+                        <h4 class="mb-3"><i class="ri-sword-line text-danger"></i> Últimas Batallas</h4>
+                        <div class="card p-3" style="max-height: 500px; overflow-y: auto;">
+                            <div class="d-flex flex-column gap-2" id="p-battles">
+                                <!-- Battles injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================= CLAN SECTION ======================= -->
+        <section id="view-clan" class="d-none">
+            <!-- Search -->
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-8 col-lg-6">
+                    <div class="input-group rounded-pill border overflow-hidden">
+                        <input type="text" id="clan-search-input" class="form-control rounded-start-pill fs-5" placeholder="Buscar clan por nombre...">
+                        <button class="btn btn-primary px-4" onclick="searchClans()">
+                            <i class="ri-search-line fs-3"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div id="clan-results" class="row g-3"></div>
+
+            <!-- Clan Details View -->
+            <div id="clan-details" class="d-none mt-4">
+                <button class="btn btn-outline-secondary btn-sm mb-3" onclick="closeClanDetails()">
+                    <i class="ri-arrow-left-line"></i> Volver
+                </button>
+                
+                <div class="card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h2 id="c-name" class="fw-bold">Clan Name</h2>
+                            <p id="c-desc" class="text-secondary">Descripción del clan...</p>
+                        </div>
+                        <div class="text-center bg-dark p-2 rounded border border-secondary">
+                            <div class="small text-secondary">Puntos Clan</div>
+                            <div class="fw-bold text-warning fs-5" id="c-score">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-transparent border-secondary fw-bold">Miembros</div>
+                            <div class="card-body p-0">
+                                <div id="c-members" class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-transparent border-secondary fw-bold">Guerra de Clanes</div>
+                            <div class="card-body">
+                                <div id="c-wars" class="d-flex flex-column gap-2" style="max-height: 400px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================= CARDS SECTION ======================= -->
+        <section id="view-cards" class="d-none">
+            <div id="cards-loader" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+            </div>
+            <div id="cards-grid" class="row row-cols-3 row-cols-sm-4 row-cols-md-6 row-cols-lg-8 g-2"></div>
+        </section>
+
+    </main>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ================= CONFIGURACIÓN =================
+        // Si tu html se sirve desde el mismo server (ej: localhost:3000/index.html)
+        // API_BASE puede estar vacía si usas rutas relativas.
+        // Si tienes problemas, usa window.location.origin
+        const API_BASE = "https://clashdata-hub.onrender.com"
+        
+        // ================= UTILIDADES =================
+        
+        const ui = {
+            alert: (msg, type = 'danger') => {
+                const el = document.getElementById('alert-box');
+                el.className = `alert alert-${type}`;
+                el.innerText = msg;
+                el.classList.remove('d-none');
+                setTimeout(() => el.classList.add('d-none'), 4000);
+            },
+            hideAllViews: () => {
+                ['view-player', 'view-clan', 'view-cards'].forEach(id => {
+                    document.getElementById(id).classList.add('d-none');
+                });
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            },
+            formatTag: (tag) => {
+                // Elimina el # y codifica caracteres especiales por si acaso
+                let clean = tag.trim().toUpperCase().replace('#', '');
+                return clean; 
+            }
+        };
+
+        function switchTab(tabName) {
+            ui.hideAllViews();
+            document.getElementById(`view-${tabName}`).classList.remove('d-none');
+            document.getElementById(`nav-${tabName}`).classList.add('active');
+
+            if (tabName === 'cards' && document.getElementById('cards-grid').children.length === 0) {
+                getCards();
+            }
+        }
+
+        // Wrapper centralizado para Fetch
+        // Reemplaza tu función apiFetch con esta versión mejorada
+async function apiFetch(endpoint) {
+    try {
+        // URL base - mantenemos la original
+        let url = `${API_BASE}${endpoint}`;
+        
+        console.log(`Fetching: ${url}`);
+        
+        // Opciones de fetch con mode 'cors'
+        const options = {
+            method: 'GET',
+            mode: 'cors', // Esto es importante
+            headers: {
+                'Accept': 'application/json',
+            },
+            credentials: 'omit' // No enviar cookies
+        };
+        
+        const response = await fetch(url, options);
+        
+        
+        // Si es error 5xx/4xx, lanzamos error
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const json = await response.json();
+        console.log("Respuest: ",json)
+        // Si tu API siempre devuelve {success: true, data: ...}
+        if (json.success === false) {
+            throw new Error(json.error || 'Error del servidor');
+        }
+        
+        return json.data || json;
+
+    } catch (error) {
+        console.error("API Error details:", {
+            error: error.message,
+            type: error.name,
+            endpoint: endpoint
+        });
+        
+        // Mensaje más amigable
+        let userMessage = error.message;
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            userMessage = 'No se pudo conectar con el servidor. Verifica tu conexión o si el servidor está activo.';
+        } else if (error.message.includes('CORS')) {
+            userMessage = 'Error de permisos CORS. El servidor no permite peticiones desde esta página.';
+        }
+        
+        ui.alert(userMessage);
+        return null;
+    }
+}
+
+        // ================= LOGICA DE JUGADOR =================
+
+        async function fetchPlayer() {
+            const rawTag = document.getElementById('player-tag').value;
+            if (!rawTag) return ui.alert('Por favor ingresa un Tag');
+
+            const tag = ui.formatTag(rawTag);
+            
+            // UI Update
+            document.getElementById('player-loader').classList.remove('d-none');
+            document.getElementById('player-content').classList.add('d-none');
+
+            try {
+                // Ejecutamos las dos peticiones en paralelo para mayor velocidad
+                const [playerData, battlesData] = await Promise.all([
+                    apiFetch(`/player/${tag}`),
+                    apiFetch(`/player/${tag}/battles`)
+                ]);
+
+                if (playerData) {
+                    renderPlayerInfo(playerData);
+                    if (battlesData) renderBattles(battlesData);
+                    document.getElementById('player-content').classList.remove('d-none');
+                }
+
+            } catch (error) {
+                // El error ya lo maneja apiFetch con el alert, pero ocultamos el loader aqui
+            } finally {
+                document.getElementById('player-loader').classList.add('d-none');
+            }
+        }
+
+        function renderPlayerInfo(data) {
+            document.getElementById('p-name').innerText = data.name;
+            document.getElementById('p-tag').innerText = data.tag;
+            document.getElementById('p-clan').innerText = data.clan ? data.clan.name : 'Sin Clan';
+            document.getElementById('p-level').innerText =  data.expLevel || '-';
+            document.getElementById('p-trophies').innerText = data.trophies || 0;
+            document.getElementById('p-best').innerText = data.bestTrophies || 0;
+
+            const deckEl = document.getElementById('p-deck');
+            deckEl.innerHTML = '';
+            
+            if (data.currentDeck) {
+                data.currentDeck.forEach(card => {
+                    deckEl.innerHTML += `
+                        <div class="col-3">
+                            <div class="deck-card">
+                                <img src="${card.iconUrls.medium}" alt="${card.name}">
+                                <span class="level-badge">nv.${14 - (card.maxLevel - card.level + 1)}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function renderBattles(battles) {
+            const container = document.getElementById('p-battles');
+            container.innerHTML = '';
+
+            if (!battles || battles.length === 0) {
+                container.innerHTML = '<div class="text-muted text-center">No hay batallas recientes.</div>';
+                return;
+            }
+
+            battles.slice(0, 10).forEach(b => {
+                // Lógica para determinar ganador (asumiendo estructura estandar de CR API)
+                const myCrowns = b.team[0].crowns;
+                const opCrowns = b.opponent[0].crowns;
+                const isWin = myCrowns > opCrowns;
+                
+                const cssClass = isWin ? 'battle-win' : (myCrowns < opCrowns ? 'battle-loss' : 'border-start border-secondary');
+                const label = isWin ? 'VICTORIA' : (myCrowns < opCrowns ? 'DERROTA' : 'EMPATE');
+                const labelColor = isWin ? 'text-success' : (myCrowns < opCrowns ? 'text-danger' : 'text-secondary');
+
+                // Formatear fecha
+                let dateStr = "Hace poco";
+                try {
+                    // La API de CR devuelve formato ISO extraño a veces, o ISO estandar
+                    // Ejemplo: 20231012T150000.000Z. El wrapper suele devolver Date object o string ISO.
+                    dateStr = new Date(b.battleTime).toLocaleDateString(); 
+                } catch(e) {}
+
+                container.innerHTML += `
+                    <div class="card bg-dark p-2 battle-item ${cssClass}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold ${labelColor}" style="font-size:0.8rem">${label}</span>
+                                <div class="text-secondary small">${b.type}</div>
+                            </div>
+                            <div class="text-end">
+                                <div class="fw-bold small">vs ${b.opponent[0].name}</div>
+                                <div class="small">
+                                    <i class="ri-vip-crown-fill text-warning"></i> 
+                                    ${myCrowns} - ${opCrowns}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // ================= LOGICA DE CLAN =================
+
+        async function searchClans() {
+            const term = document.getElementById('clan-search-input').value;
+            if (term.length < 3) return ui.alert('Escribe al menos 3 caracteres');
+
+            // Según tu ruta: /search usando ClansController.getClansBySearch
+            // Usualmente esto es por query param ?name=...
+            const data = await apiFetch(`/clans/search?name=${encodeURIComponent(term)}`);
+            
+            const container = document.getElementById('clan-results');
+            container.innerHTML = '';
+            document.getElementById('clan-details').classList.add('d-none');
+
+            if (data && data.length > 0) {
+                data.forEach(clan => {
+                    container.innerHTML += `
+                        <div class="col-md-6">
+                            <div class="card p-3 h-100" style="cursor:pointer" onclick="openClanDetails('${clan.tag}')">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="fw-bold mb-0">${clan.name}</h5>
+                                        <small class="text-secondary">${clan.tag}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="badge bg-dark border border-secondary">
+                                            <i class="ri-user-line"></i> ${clan.members}/50
+                                        </div>
+                                        <div class="mt-1 small text-warning">
+                                            <i class="ri-trophy-fill"></i> ${clan.clanScore}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = '<div class="col-12 text-center text-secondary">No se encontraron clanes.</div>';
+            }
+        }
+
+        async function openClanDetails(tag) {
+            const cleanTag = ui.formatTag(tag);
+            
+            // Limpiar UI previa
+            document.getElementById('clan-results').innerHTML = '';
+            
+            try {
+                // Según tu especificación de rutas:
+                // /:tag -> Clan Details
+                // /:tag/members -> Members
+                // /:tag/wars -> Warlog
+                
+                // NOTA IMPORTANTE: Si tu API está en la raíz, llamar a `/${cleanTag}` puede conflictuar 
+                // si no tienes un prefijo '/clan'. Asumiré que el backend maneja esto. 
+                // Si falla, revisa si tu backend necesita `/clan/${cleanTag}`.
+                
+                const [details, members, wars] = await Promise.all([
+                    apiFetch(`/clans/${cleanTag}`),
+                    apiFetch(`/clans/${cleanTag}/members`),
+                    apiFetch(`/clans/${cleanTag}/wars`)
+                ]);
+
+                if (details) {
+                    document.getElementById('clan-details').classList.remove('d-none');
+                    document.getElementById('c-name').innerText = details.name;
+                    document.getElementById('c-desc').innerText = details.description || '';
+                    document.getElementById('c-score').innerText = details.clanScore;
+
+                    // Render Members
+                    const mList = document.getElementById('c-members');
+                    mList.innerHTML = '';
+                    if (members) {
+                        members.forEach(m => {
+                            mList.innerHTML += `
+                                <div class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold small">${m.name}</div>
+                                        <small class="text-secondary" style="font-size:0.7rem">${m.role}</small>
+                                    </div>
+                                    <span class="badge bg-dark text-warning border border-secondary">${m.trophies}</span>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    // Render Wars
+                    const wList = document.getElementById('c-wars');
+                    wList.innerHTML = '';
+                    if (wars) {
+                        wars.forEach(w => {
+                            // Estructura IWarlog
+                            const date = new Date(w.createdDate).toLocaleDateString();
+                            wList.innerHTML += `
+                                <div class="p-2 bg-dark rounded border border-secondary">
+                                    <div class="d-flex justify-content-between small text-secondary mb-1">
+                                        <span>Temp. ${w.seasonId || '?'}</span>
+                                        <span>${date}</span>
+                                    </div>
+                                    <div class="fw-bold text-center">
+                                        Puesto #${w.standing || '-'}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function closeClanDetails() {
+            document.getElementById('clan-details').classList.add('d-none');
+            // Opcional: Podrías volver a mostrar los resultados de búsqueda si los guardaste
+            document.getElementById('clan-search-input').focus();
+        }
+
+        // ================= LOGICA DE CARTAS =================
+
+        async function getCards() {
+            document.getElementById('cards-loader').classList.remove('d-none');
+            const grid = document.getElementById('cards-grid');
+            grid.innerHTML = '';
+
+            const data = await apiFetch('/cards');
+            document.getElementById('cards-loader').classList.add('d-none');
+
+            if (data && data.items) {
+                data.items.forEach(card => {
+                    grid.innerHTML += `
+                        <div class="col">
+    <div class="card p-3 h-100 bg-dark border-secondary text-light position-relative">
+        <!-- Badge de rareza en esquina superior -->
+        <div class="position-absolute top-0 start-0 m-2">
+            <span class="badge bg-secondary text-uppercase" style="font-size: 0.65rem;">${card.rarity}</span>
+        </div>
+        
+        <!-- Imagen de la carta -->
+        <div class="text-center mb-3">
+            <img src="${card.iconUrls.medium}" class="img-fluid rounded" loading="lazy" style="max-height: 120px; object-fit: contain;">
+        </div>
+        
+        <!-- Nombre de la carta -->
+        <h6 class="card-title text-center fw-bold mb-3 text-warning">${card.name}</h6>
+        
+        <!-- Propiedades de la carta en una lista ordenada -->
+        <div class="card-properties">
+            <div class="row g-1">
+                <!-- Nivel Máximo -->
+                <div class="col-6">
+                    <div class="d-flex flex-column text-center justify-content-between align-items-center p-1 bg-dark-subtle rounded">
+                        <small class="text-muted">Nivel Máx.</small>
+                        <small class="fw-bold">${card.maxLevel}</small>
+                    </div>
+                </div>
+                
+                <!-- Nivel Evolución -->
+                <div class="col-6">
+                    <div class="d-flex flex-column text-center justify-content-between align-items-center p-1 bg-dark-subtle rounded">
+                        <small class="text-muted">Evolución Máx.</small>
+                        <small class="fw-bold">${card.maxEvolutionLevel || ''}</small>
+                    </div>
+                </div>
+                
+                <!-- Costo de Elixir -->
+                <div class="col-12 mt-2">
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-info bg-opacity-10 rounded border border-info border-opacity-25">
+                        <small class="text-info fw-semibold">Costo de Elixir</small>
+                        <div class="d-flex align-items-center">
+                            <!-- Icono de elixir -->
+                            <svg fill="#fa00f2" width='20px' height='20px'  viewBox="-5.28 -5.28 34.56 34.56" role="img" xmlns="http://www.w3.org/2000/svg" stroke="#fa00f2" stroke-width="2.4"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><title>Elixir icon</title><path d="M19.789,16.578c0,3.75-2.926,7.422-7.739,7.422c-5.246,0-7.839-3.708-7.839-8.285 c0-5.207,3.89-12.946,7.995-15.639c0.277-0.182,0.643,0.041,0.611,0.371c-0.03,0.313-0.046,0.631-0.046,0.951 c0,2.067,0.641,3.985,1.738,5.563c0.522,0.795,1.092,1.477,1.763,2.351c0.94,1.226,1.636,1.905,2.642,3.84 c0.005,0.01,0.01,0.018,0.015,0.028C19.48,14.197,19.789,15.352,19.789,16.578z"></path></g></svg>
+                    <span class="fw-bold fs-6 text-light">${card.elixirCost}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>                    
+                    `;
+                });
+            }
+        }
+
+    </script>
+</body>
+</html>
