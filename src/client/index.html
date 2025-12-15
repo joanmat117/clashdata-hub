@@ -163,49 +163,16 @@ body {
             <!-- Player Content -->
             <div id="player-content" class="d-none animate-fade">
                 <!-- Header Info -->
-                <div class="card p-4 mb-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="display-6 fw-bold mb-1">
-                                <span id="p-name">Nombre</span>
-                                <span class="badge bg-secondary fs-6 align-middle" id="p-tag">#TAG</span>
-                            </h1>
-                            <p class="text-secondary mb-3"><i class="ri-shield-user-line"></i> <span id="p-clan">Sin Clan</span></p>
-                            
-                            <div class="d-flex gap-4">
-                                <div>
-                                    <small class="text-secondary d-block">Nivel</small>
-                                    <span class="fs-4 fw-bold" id="p-level">14</span>
-                                </div>
-                                
-                                <div>
-                                    <small class="text-secondary d-block">Trofeos</small>
-                                    <span class="fs-4 fw-bold text-warning" id="p-trophies">0</span>
-                                </div>
-                                <div>
-                                    <small class="text-secondary d-block">Récord</small>
-                                    <span class="fs-4 fw-bold" id="p-best">0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
 
-                <div class="row g-4">
+                <div class="row g-4" id="deck-and-battles">
                     <!-- Current Deck -->
-                    <div class="col-lg-6">
-                        <h4 class="mb-3"><i class="ri-stack-line text-primary"></i> Mazo Actual</h4>
-                        <div class="card p-3">
-                            <div class="row g-2" id="p-deck">
-                                <!-- Cards injected via JS -->
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Battle Log -->
                     <div class="col-lg-6">
                         <h4 class="mb-3"><i class="ri-sword-line text-danger"></i> Últimas Batallas</h4>
-                        <div class="card p-3" style="max-height: 500px; overflow-y: auto;">
+                        <div class="card p-3" >
                             <div class="d-flex flex-column gap-2" id="p-battles">
                                 <!-- Battles injected via JS -->
                             </div>
@@ -277,7 +244,7 @@ body {
             <div id="cards-loader" class="text-center py-5">
                 <div class="spinner-border text-primary" role="status"></div>
             </div>
-            <div id="cards-grid" class="row row-cols-3 row-cols-sm-4 row-cols-md-6 row-cols-lg-8 g-2"></div>
+            <div id="cards-grid" class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-2"></div>
         </section>
 
     </main>
@@ -413,30 +380,7 @@ async function apiFetch(endpoint) {
             }
         }
 
-        function renderPlayerInfo(data) {
-            document.getElementById('p-name').innerText = data.name;
-            document.getElementById('p-tag').innerText = data.tag;
-            document.getElementById('p-clan').innerText = data.clan ? data.clan.name : 'Sin Clan';
-            document.getElementById('p-level').innerText =  data.expLevel || '-';
-            document.getElementById('p-trophies').innerText = data.trophies || 0;
-            document.getElementById('p-best').innerText = data.bestTrophies || 0;
-
-            const deckEl = document.getElementById('p-deck');
-            deckEl.innerHTML = '';
-            
-            if (data.currentDeck) {
-                data.currentDeck.forEach(card => {
-                    deckEl.innerHTML += `
-                        <div class="col-3">
-                            <div class="deck-card">
-                                <img src="${card.iconUrls.medium}" alt="${card.name}">
-                                <span class="level-badge">nv.${14 - (card.maxLevel - card.level + 1)}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-        }
+        function renderPlayerInfo(data){const t=data.battleCount||0,e=t>0?((data.wins/t)*100).toFixed(1):0;document.getElementById("player-content").insertAdjacentHTML("afterbegin",`<div class="card p-3 p-md-4 mb-4"><div class="row align-items-center"><div class="col-lg-8"><div class="d-flex flex-wrap align-items-center mb-3"><h1 class="h3 fw-bold mb-0 me-3">${data.name}</h1><span class="badge bg-dark bg-opacity-75"><i class="ri-hashtag"></i>${data.tag.replace("#","")}</span></div><div class="d-flex align-items-center mb-3"><i class="ri-shield-user-line text-primary me-2"></i><span class="fw-medium">${data.clan?data.clan.name:"Sin clan"}</span>${data.role?`<span class="badge bg-info bg-opacity-25 ms-2">${data.role}</span>`:""}</div><div class="row g-2 mb-3"><div class="col-6 col-md-4"><div class="border-start border-3 border-warning ps-2"><small class="text-secondary d-block"><i class="ri-user-star-line me-1"></i>Nivel</small><span class="fs-5 fw-bold">${data.expLevel||"-"}${data.expPoints?`<small class="text-secondary ms-1">(${data.expPoints})</small>`:""}</span></div></div><div class="col-6 col-md-4"><div class="border-start border-3 border-warning ps-2"><small class="text-secondary d-block"><i class="ri-trophy-line me-1"></i>Trofeos</small><span class="fs-5 fw-bold text-warning">${data.trophies||0}</span></div></div><div class="col-6 col-md-4"><div class="border-start border-3 border-warning ps-2"><small class="text-secondary d-block"><i class="ri-award-line me-1"></i>Récord</small><span class="fs-5 fw-bold">${data.bestTrophies||0}</span></div></div></div><div class="row g-2"><div class="col-6 col-md-3"><div class="bg-dark bg-opacity-25 rounded p-2 text-center"><small class="text-secondary d-block"><i class="ri-medal-line me-1"></i>Victorias</small><span class="fw-bold text-success">${data.wins||0}</span></div></div><div class="col-6 col-md-3"><div class="bg-dark bg-opacity-25 rounded p-2 text-center"><small class="text-secondary d-block"><i class="ri-percent-line me-1"></i>Win Rate</small><span class="fw-bold ${e>=50?"text-success":"text-warning"}">${e}%</span></div></div><div class="col-6 col-md-3"><div class="bg-dark bg-opacity-25 rounded p-2 text-center"><small class="text-secondary d-block"><i class="ri-crown-line me-1"></i>3 Coronas</small><span class="fw-bold text-info">${data.threeCrownWins||0}</span></div></div><div class="col-6 col-md-3"><div class="bg-dark bg-opacity-25 rounded p-2 text-center"><small class="text-secondary d-block"><i class="ri-sword-line me-1"></i>Batallas</small><span class="fw-bold">${t}</span></div></div></div></div><div class="col-lg-4 mt-3 mt-lg-0"><div class="card bg-dark bg-opacity-25 border-0 p-3"><h6 class="fw-bold mb-3"><i class="ri-hand-heart-line text-success me-2"></i>Donaciones</h6><div class="mb-3"><div class="d-flex justify-content-between mb-1"><small class="text-secondary"><i class="ri-upload-line me-1"></i>Donadas</small><small class="fw-bold text-success">${data.donations||0}</small></div><div class="progress" style="height:6px"><div class="progress-bar bg-success" style="width:${Math.min(data.donations/1000*100,100)}%"></div></div></div><div class="mb-3"><div class="d-flex justify-content-between mb-1"><small class="text-secondary"><i class="ri-download-line me-1"></i>Recibidas</small><small class="fw-bold text-info">${data.donationsReceived||0}</small></div><div class="progress" style="height:6px"><div class="progress-bar bg-info" style="width:${Math.min(data.donationsReceived/1000*100,100)}%"></div></div></div>${data.warDayWins>0?`<div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary"><small class="text-secondary"><i class="ri-sword-fill me-1"></i>Guerras</small><small class="fw-bold text-warning">${data.warDayWins}</small></div>`:""}</div></div></div><div class="row g-3 mt-3"><div class="col-md-6"><div class="d-flex align-items-center"><i class="ri-map-pin-line text-primary me-2 fs-5"></i><div><small class="text-secondary d-block">Arena</small><span class="fw-medium">${data.arena?.name||"N/A"}</span></div></div></div>${data.currentFavouriteCard?`<div class="col-md-6"><div class="d-flex align-items-center"><img src="${data.currentFavouriteCard.iconUrls.medium}" class="rounded me-2" style="width:40px"><div><small class="text-secondary d-block">Favorita</small><span class="fw-medium">${data.currentFavouriteCard.name}</span></div></div></div>`:""}</div></div>`);const i=document.getElementById("deck-and-battles");i.insertAdjacentHTML("afterbegin",`<div id="deck-content" class="col-lg-6"><div class="d-flex justify-content-between align-items-center mb-3"><h4 class="mb-0"><i class="ri-stack-line text-primary"></i> Mazo</h4>${data.currentDeck?`<span class="badge bg-dark bg-opacity-50"><i class="ri-drop-line me-1"></i>${(data.currentDeck.reduce((t,e)=>t+e.elixirCost,0)/8).toFixed(1)}</span>`:""}</div><div class="card p-3"><div class="row row- g-2" id="p-deck"></div></div></div>`);const a=document.getElementById("p-deck");a.innerHTML="",data.currentDeck&&data.currentDeck.forEach(t=>{const e=14-(t.maxLevel-t.level+1);a.innerHTML+=`<div class="col-3 col-md-3"><div class="deck-card position-relative"><img src="${t.iconUrls.medium}" alt="${t.name}" class="img-fluid rounded"><div class="position-absolute bottom-0 start-0 end-0 p-1"><div class="d-flex justify-content-between align-items-center"><span class="level-badge">${e}</span><span class="badge rarity-${t.rarity} px-1" style="font-size:.6rem">${t.elixirCost} <i class="ri-drop-line"></i></span></div></div></div><small class="text-center d-block mt-1" style="font-size:.7rem">${t.name}</small></div>`})}
 
         function renderBattles(battles) {
             const container = document.getElementById('p-battles');
@@ -466,21 +410,59 @@ async function apiFetch(endpoint) {
                 } catch(e) {}
 
                 container.innerHTML += `
-                    <div class="card bg-dark p-2 battle-item ${cssClass}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="fw-bold ${labelColor}" style="font-size:0.8rem">${label}</span>
-                                <div class="text-secondary small">${b.type}</div>
-                            </div>
-                            <div class="text-end">
-                                <div class="fw-bold small">vs ${b.opponent[0].name}</div>
-                                <div class="small">
-                                    <i class="ri-vip-crown-fill text-warning"></i> 
-                                    ${myCrowns} - ${opCrowns}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<div class="card bg-dark p-3 battle-item ${cssClass}">
+    <div class="d-flex justify-content-between align-items-start">
+        <!-- Columna Izquierda: Info de la batalla -->
+        <div class="flex-grow-1 me-3">
+            <div class="d-flex align-items-center mb-2">
+                <i class="ri-sword-fill ${label === 'Victoria' ? 'text-success' : 'text-danger'} me-2"></i>
+                <span class="fw-bold ${labelColor} me-2">${label}</span>
+                <span class="badge bg-secondary bg-opacity-50 small">${b.type}</span>
+            </div>
+            
+            <div class="small text-body-secondary mb-1">
+                <i class="ri-map-pin-line me-1"></i> ${b.arena.name}
+            </div>
+            
+            <div class="d-flex align-items-center">
+                <span class="me-2 small">Trofeos:</span>
+                <span class="badge bg-opacity-20 text-warning small">
+                    ${b.team[0].startingTrophies} <i class="ri-arrow-right-s-line mx-1"></i> ${b.team[0].startingTrophies + b.team[0].trophyChange}
+                </span>
+            </div>
+        </div>
+        
+        <!-- Columna Derecha: Resultado vs Oponente -->
+        <div class="text-end">
+            <div class="d-flex align-items-center justify-content-end mb-2">
+                <span class="me-2 small">${b.opponent[0].name}</span>
+                <i class="ri-user-line text-body-secondary"></i>
+            </div>
+            
+            <div class="d-flex align-items-center justify-content-end mb-2">
+                <span class="badge ${myCrowns > opCrowns ? 'bg-success' : 'bg-danger'} bg-opacity-25 me-2">
+                    ${myCrowns} - ${opCrowns}
+                </span>
+                <i class="ri-vip-crown-fill ${myCrowns > opCrowns ? 'text-warning' : 'text-body-secondary'}"></i>
+            </div>
+            
+            <div class="text-body-secondary small">
+                <i class="ri-time-line me-1"></i> ${parseBattleDate(b.battleTime).toLocaleString()}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Barra de progreso para el elixir filtrado -->
+    <div class="mt-3">
+        <div class="d-flex justify-content-between small text-body-secondary mb-1">
+            <span>Elixir Filtrado</span>
+            <span>${b.team[0].elixirLeaked.toFixed(2)}</span>
+        </div>
+        <div class="progress" style="height: 4px;">
+            <div class="progress-bar bg-info" role="progressbar" style="width: ${Math.min(b.team[0].elixirLeaked * 10, 100)}%"></div>
+        </div>
+    </div>
+</div>
                 `;
             });
         }
@@ -648,7 +630,7 @@ async function apiFetch(endpoint) {
                 <div class="col-6">
                     <div class="d-flex flex-column text-center justify-content-between align-items-center p-1 bg-dark-subtle rounded">
                         <small class="text-muted">Evolución Máx.</small>
-                        <small class="fw-bold">${card.maxEvolutionLevel || ''}</small>
+                        <small class="fw-bold">${card.maxEvolutionLevel || '-'}</small>
                     </div>
                 </div>
                 
@@ -659,7 +641,7 @@ async function apiFetch(endpoint) {
                         <div class="d-flex align-items-center">
                             <!-- Icono de elixir -->
                             <svg fill="#fa00f2" width='20px' height='20px'  viewBox="-5.28 -5.28 34.56 34.56" role="img" xmlns="http://www.w3.org/2000/svg" stroke="#fa00f2" stroke-width="2.4"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><title>Elixir icon</title><path d="M19.789,16.578c0,3.75-2.926,7.422-7.739,7.422c-5.246,0-7.839-3.708-7.839-8.285 c0-5.207,3.89-12.946,7.995-15.639c0.277-0.182,0.643,0.041,0.611,0.371c-0.03,0.313-0.046,0.631-0.046,0.951 c0,2.067,0.641,3.985,1.738,5.563c0.522,0.795,1.092,1.477,1.763,2.351c0.94,1.226,1.636,1.905,2.642,3.84 c0.005,0.01,0.01,0.018,0.015,0.028C19.48,14.197,19.789,15.352,19.789,16.578z"></path></g></svg>
-                    <span class="fw-bold fs-6 text-light">${card.elixirCost}</span>
+                    <span class="fw-bold fs-6 text-light">${card.elixirCost || '-'}</span>
                         </div>
                     </div>
                 </div>
@@ -671,7 +653,20 @@ async function apiFetch(endpoint) {
                 });
             }
         }
-
+function parseBattleDate(fechaStr) {
+  // Convertir 20251215T185909.000Z a 2025-12-15T18:59:09.000Z
+  const anio = fechaStr.substring(0, 4);
+  const mes = fechaStr.substring(4, 6);
+  const dia = fechaStr.substring(6, 8);
+  const hora = fechaStr.substring(9, 11);
+  const minuto = fechaStr.substring(11, 13);
+  const segundo = fechaStr.substring(13, 15);
+  const milisegundos = fechaStr.substring(16, 19);
+  const zona = fechaStr.substring(19);
+  const fechaISO = `${anio}-${mes}-${dia}T${hora}:${minuto}:${segundo}.${milisegundos}${zona}`;
+  
+  return new Date(fechaISO);
+}
     </script>
 </body>
 </html>
