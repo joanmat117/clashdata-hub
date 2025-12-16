@@ -1,0 +1,5 @@
+export function getSQLiteDateTime(date = new Date()) {
+  return date.toISOString()
+    .replace('T', ' ')
+    .replace(/\.\d{3}Z$/, '');
+}

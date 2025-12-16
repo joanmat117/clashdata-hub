@@ -19,10 +19,13 @@
     "@types/express": "^5.0.4",
     "@types/node": "^24.1.0",
     "@varandas/clash-royale-api": "^2.3.0",
+    "better-sqlite3": "^12.5.0",
     "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "sqlite": "^5.1.1"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
     "tsx": "^4.21.0",
     "typescript": "^5.8.3"
   }
