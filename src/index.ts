@@ -19,7 +19,7 @@ app.get('/',(_,res)=>{
   const indexPath = join(resolve(process.cwd()),'src','client','index.html')
   res.sendFile(indexPath)
 })
-app.use(apiCacheMiddleware())
+// app.use(apiCacheMiddleware())
 app.use('/player',playerRouter)
 app.use('/cards',cardsRouter)
 app.use('/clans',clansRouter)
